@@ -13,7 +13,7 @@ const float PADDLE_SPEED = 5.0f;
 const float BALL_SPEED = 3.0f;
 const float GAME_START_DELAY = 2.0f;
 const int WINNING_SCORE = 10;
-
+// GameStates
 enum GameState {
     MENU,
     PLAYING,
