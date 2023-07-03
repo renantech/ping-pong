@@ -1,11 +1,11 @@
 # Documentação do Jogo
 
-## <Nome do jogo>
+## <Ponguinho>
 
-**Autores:** 
+**Autores:**  Gustavo Pereira e Renan Mendes 
 
 **Belo Horizonte**
-**<mês e ano>**
+**<Julho de 2023>**
 
 ## Documentação do Sistema
 
