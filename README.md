@@ -78,9 +78,3 @@ Não confundir diagrama de arquitetura (visão geral) com fluxograma. Um fluxogr
 | 1      |                    |                 |                    |                   |                    |
 | 2      |                    |                 |                    |                   |                    |
 | 3      |                    |                 |                    |                   |
-
-                    |
-| 4      |                    |                 |                    |                   |                    |
-| ...    |                    |                 |                    |                   |                    |
-
-Coloque este texto de forma apropriada para `readme.md`. Note que a formatação pode variar dependendo da plataforma em que você estiver exibindo o arquivo `readme.md`, então ajuste-a conforme necessário. Lembre-se de preencher as seções com as informações específicas do seu jogo e sistema.
