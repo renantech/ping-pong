@@ -14,6 +14,12 @@ const float BALL_SPEED = 3.0f;
 const float GAME_START_DELAY = 2.0f;
 const int WINNING_SCORE = 10;
 
+enum GameState {
+    MENU,
+    PLAYING,
+    GAME_OVER
+};
+
 struct Paddle {
     float x, y;
     float dy;
@@ -39,7 +45,7 @@ int main() {
 
     bool redraw = true;
     bool quit = false;
-    bool gameStarted = false;
+    GameState state = MENU;
     float gameStartTimer = 0.0f;
     int score1 = 0;
     int score2 = 0;
@@ -60,6 +66,7 @@ int main() {
     }
 
     al_install_keyboard();
+    al_install_mouse();
     al_init_primitives_addon();
     al_init_font_addon();
     al_init_ttf_addon();
@@ -85,6 +92,7 @@ int main() {
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_timer_event_source(timer));
     al_register_event_source(event_queue, al_get_keyboard_event_source());
+    al_register_event_source(event_queue, al_get_mouse_event_source());
 
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_flip_display();
@@ -98,7 +106,10 @@ int main() {
         if (ev.type == ALLEGRO_EVENT_TIMER) {
             redraw = true;
 
-            if (gameStarted) {
+            switch (state) {
+            case MENU:
+                break;
+            case PLAYING:
                 player1.y += player1.dy;
                 player2.y += player2.dy;
 
@@ -122,12 +133,12 @@ int main() {
                 }
 
                 if (checkCollision(ball.x - BALL_RADIUS, ball.y - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2,
-                    player1.x, player1.y, PADDLE_WIDTH, PADDLE_HEIGHT)) {
+                                   player1.x, player1.y, PADDLE_WIDTH, PADDLE_HEIGHT)) {
                     ball.dx = -ball.dx;
                 }
 
                 if (checkCollision(ball.x - BALL_RADIUS, ball.y - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2,
-                    player2.x, player2.y, PADDLE_WIDTH, PADDLE_HEIGHT)) {
+                                   player2.x, player2.y, PADDLE_WIDTH, PADDLE_HEIGHT)) {
                     ball.dx = -ball.dx;
                 }
 
@@ -146,42 +157,53 @@ int main() {
                 }
 
                 if (score1 == WINNING_SCORE || score2 == WINNING_SCORE) {
-                    std::cout << "Game Over!" << std::endl;
-                    quit = true;
+                    state = GAME_OVER;
                 }
-            } else {
-                gameStartTimer += 1.0f / 60;
-                if (gameStartTimer >= GAME_START_DELAY) {
-                    gameStarted = true;
-                }
+                break;
+            case GAME_OVER:
+                break;
             }
+
         } else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
             break;
+        } else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+            if (state == MENU) {
+                state = PLAYING;
+                gameStartTimer = 0.0f;
+                score1 = 0;
+                score2 = 0;
+                player1.y = SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2;
+                player2.y = SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2;
+                ball.x = SCREEN_WIDTH / 2;
+                ball.y = SCREEN_HEIGHT / 2;
+                ball.dx = -BALL_SPEED;
+                ball.dy = BALL_SPEED;
+            }
         } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
             switch (ev.keyboard.keycode) {
-                case ALLEGRO_KEY_UP:
-                    player2.dy = -PADDLE_SPEED;
-                    break;
-                case ALLEGRO_KEY_DOWN:
-                    player2.dy = PADDLE_SPEED;
-                    break;
-                case ALLEGRO_KEY_W:
-                    player1.dy = -PADDLE_SPEED;
-                    break;
-                case ALLEGRO_KEY_S:
-                    player1.dy = PADDLE_SPEED;
-                    break;
+            case ALLEGRO_KEY_UP:
+                player2.dy = -PADDLE_SPEED;
+                break;
+            case ALLEGRO_KEY_DOWN:
+                player2.dy = PADDLE_SPEED;
+                break;
+            case ALLEGRO_KEY_W:
+                player1.dy = -PADDLE_SPEED;
+                break;
+            case ALLEGRO_KEY_S:
+                player1.dy = PADDLE_SPEED;
+                break;
             }
         } else if (ev.type == ALLEGRO_EVENT_KEY_UP) {
             switch (ev.keyboard.keycode) {
-                case ALLEGRO_KEY_UP:
-                case ALLEGRO_KEY_DOWN:
-                    player2.dy = 0;
-                    break;
-                case ALLEGRO_KEY_W:
-                case ALLEGRO_KEY_S:
-                    player1.dy = 0;
-                    break;
+            case ALLEGRO_KEY_UP:
+            case ALLEGRO_KEY_DOWN:
+                player2.dy = 0;
+                break;
+            case ALLEGRO_KEY_W:
+            case ALLEGRO_KEY_S:
+                player1.dy = 0;
+                break;
             }
         }
 
@@ -190,13 +212,21 @@ int main() {
 
             al_clear_to_color(al_map_rgb(0, 0, 0));
 
-            if (gameStarted) {
+            switch (state) {
+            case MENU:
+                al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, "Ponguinho");
+                al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50, ALLEGRO_ALIGN_CENTER, "Clique em qualquer lugar para jogar");
+                break;
+            case PLAYING:
                 al_draw_filled_rectangle(player1.x, player1.y, player1.x + PADDLE_WIDTH, player1.y + PADDLE_HEIGHT, al_map_rgb(255, 0, 0));
                 al_draw_filled_rectangle(player2.x, player2.y, player2.x + PADDLE_WIDTH, player2.y + PADDLE_HEIGHT, al_map_rgb(0, 0, 255));
                 al_draw_filled_circle(ball.x, ball.y, BALL_RADIUS, al_map_rgb(255, 255, 255));
                 al_draw_textf(font, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, 10, ALLEGRO_ALIGN_CENTER, "%d - %d", score1, score2);
-            } else {
-                al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, "READY!");
+                break;
+            case GAME_OVER:
+                al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, "Game Over!");
+                al_draw_textf(font, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50, ALLEGRO_ALIGN_CENTER, "Click to Play Again");
+                break;
             }
 
             al_flip_display();
